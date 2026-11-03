@@ -63,7 +63,6 @@ from xml.etree import ElementTree
 import numpy as onp
 
 from path_optimizer.stripes import StripeField, resample
-from path_optimizer.printers import raise3D_layer_change
 
 __all__ = [
     "Path",
@@ -2224,6 +2223,7 @@ def to_fullcontrol_layers(layers, *, z0: float = 0.0,
     extrusion model matches the spacing unless told otherwise.
     """
     kwargs.setdefault("height", layer_height)
+    from path_optimizer.printers import raise3D_layer_change
     steps: list = []
     for k, paths in enumerate(layers):
         layer_z=z0 + k * layer_height
