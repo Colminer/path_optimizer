@@ -63,6 +63,7 @@ from xml.etree import ElementTree
 import numpy as onp
 
 from path_optimizer.stripes import StripeField, resample
+from path_optimizer.printers import raise3D_layer_change
 
 __all__ = [
     "Path",
@@ -2225,5 +2226,7 @@ def to_fullcontrol_layers(layers, *, z0: float = 0.0,
     kwargs.setdefault("height", layer_height)
     steps: list = []
     for k, paths in enumerate(layers):
-        steps += to_fullcontrol(paths, z=z0 + k * layer_height, **kwargs)
+        layer_z=z0 + k * layer_height
+        steps += to_fullcontrol(paths, z=layer_z, **kwargs)
+        steps += raise3D_layer_change(layer=k, z=layer_z, layer_height=layer_height)
     return steps
