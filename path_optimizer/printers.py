@@ -55,6 +55,7 @@ def raise3D_startup_as_steps(
     starting_procedure_steps.append(fc.ManualGcode(text=f"M221 T0 S{extrusion_multiplier:.2f}; Extrusion multiplier"))
     starting_procedure_steps.append(fc.Buildplate(temp=heatbed_temp, wait=False))
     starting_procedure_steps.append(fc.Hotend(temp=nozzle_temp_extruder0, wait=True))
+    #TODO tool number addition for m104
     starting_procedure_steps.append(fc.ManualGcode(text="T0; Select Tool 0"))
     starting_procedure_steps.append(fc.Buildplate(temp=heatbed_temp, wait=True))
     starting_procedure_steps.append(fc.ManualGcode(text=f"M572 D0 S{pressure_advance:.2f}; Pressure advance setting"))
@@ -62,13 +63,12 @@ def raise3D_startup_as_steps(
     starting_procedure_steps.append(fc.PrinterCommand(id="units_mm"))  # G21
     starting_procedure_steps.append(fc.PrinterCommand(id="absolute_coords"))  # G90
     starting_procedure_steps.append(fc.Extruder(relative_gcode=False))  # M82
+    starting_procedure_steps.append(fc.ManualGcode(text="M107"))
     starting_procedure_steps.append(fc.Fan(speed_percent=fan_beginning))
     starting_procedure_steps.append(fc.ManualGcode(text="G28; Home Axis"))
     starting_procedure_steps.append(fc.ManualGcode(text="G1 Z0.5 F500; Raise bed"))
     starting_procedure_steps.append(fc.ManualGcode(text="G92 E0; Reset extruder position"))
     starting_procedure_steps.append(fc.Printer(travel_speed=rapid_speed))
-    starting_procedure_steps.append(fc.ManualGcode(text="M117 Printing..."))
-    starting_procedure_steps.append(fc.ManualGcode(text="M1001"))
     return starting_procedure_steps
 
 
@@ -80,6 +80,7 @@ def raise3D_purge(
     purge_feedrate: float = 200,
     purge_length_extruded: float = 12,
     purge_end_height: float = 5,
+    z_feedrate: float = 300,
 ) -> list:
     """Raise3D purge line as FullControl steps.
 
@@ -127,12 +128,14 @@ def raise3D_purge(
     purge_end_x = purge_x + purge_length
     purge_end_extrusion = purge_length_extruded + 3
     purge_procedure_steps = []
-    purge_procedure_steps.append(fc.Printer(travel_speed=400))
+    purge_procedure_steps.append(fc.Printer(print_speed=z_feedrate))
     purge_procedure_steps.append(fc.Point(x=purge_x, y=purge_y, z=purge_z))
     purge_procedure_steps.append(fc.ManualGcode(text=f"G1 X{purge_end_x} E{purge_length_extruded} F{purge_feedrate}; Purge line"))
     purge_procedure_steps.append(fc.ManualGcode(text=f"G1 Z{purge_end_height} E{purge_end_extrusion} F{purge_feedrate}; Purge end hover"))
     purge_procedure_steps.append(fc.ManualGcode(text="G92 E0; Reset extruder position"))
-    # TODO reset rapid speed to default
+    purge_procedure_steps.append(fc.ManualGcode(text="M117 Printing..."))
+    purge_procedure_steps.append(fc.ManualGcode(text="M1001"))
+    purge_procedure_steps.append(fc.ManualGcode(text="M204 T1500"))
     return purge_procedure_steps
 
 
