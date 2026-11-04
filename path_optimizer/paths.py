@@ -2031,7 +2031,7 @@ def tool_change(tool, *, relative_e: bool | None = None) -> list:
 
 def path_steps(path, *, z: float = 0.0, scale: float = 1000.0,
                annotate: bool = True, travel: bool = True,
-               retract: bool = False, hop: float | None = None,
+               retract: bool = False, retract_speed: float = 2400, retract_length: float = 0.5, unretract_speed: float = 1200, hop: float | None = None,
                label: str | None = None) -> list:
     """One path as FullControl steps — the unit :func:`to_fullcontrol` is built from.
 
@@ -2104,7 +2104,9 @@ def path_steps(path, *, z: float = 0.0, scale: float = 1000.0,
         # extrude on the way up.
         steps.append(fc.Extruder(on=False))
         if retract:
-            steps.append(fc.PrinterCommand(id="retract"))
+            #steps.append(fc.PrinterCommand(id="retract"))
+            steps.append(fc.ManualGcode(text="M83"))
+            steps.append(fc.ManualGcode(text=f"G1 F{retract_speed} E-{retract_length}"))
         if hop:
             # Straight up: x and y carry over from wherever the head is.  That
             # only works if something has set them -- as the very first Point of
@@ -2117,7 +2119,9 @@ def path_steps(path, *, z: float = 0.0, scale: float = 1000.0,
         if hop:
             steps.append(fc.Point(z=z))
         if retract:
-            steps.append(fc.PrinterCommand(id="unretract"))
+            #steps.append(fc.PrinterCommand(id="unretract"))
+            steps.append(fc.ManualGcode(text=f"G1 F{unretract_speed} E{retract_length}"))
+            steps.append(fc.ManualGcode(text="M82"))
         steps.append(fc.Extruder(on=True))
         pts = pts[1:]
     return steps + [fc.Point(x=float(x), y=float(y), z=z) for x, y in pts]
@@ -2227,6 +2231,6 @@ def to_fullcontrol_layers(layers, *, z0: float = 0.0,
     steps: list = []
     for k, paths in enumerate(layers):
         layer_z=z0 + k * layer_height
-        steps += to_fullcontrol(paths, z=layer_z, **kwargs)
         steps += raise3D_layer_change(layer=k, z=layer_z, layer_height=layer_height)
+        steps += to_fullcontrol(paths, z=layer_z, **kwargs)
     return steps

@@ -15,6 +15,7 @@ def raise3D_startup_as_steps(
     nozzle_temp_extruder0: float = 215,
     pressure_advance: float = 0.03,
     fan_beginning: int = 0,
+    rapid_speed: int = 9000,
 ) -> list:
     """Raise3D start-up sequence as FullControl steps, without the purge.
 
@@ -63,9 +64,11 @@ def raise3D_startup_as_steps(
     starting_procedure_steps.append(fc.Extruder(relative_gcode=False))  # M82
     starting_procedure_steps.append(fc.Fan(speed_percent=fan_beginning))
     starting_procedure_steps.append(fc.ManualGcode(text="G28; Home Axis"))
-
     starting_procedure_steps.append(fc.ManualGcode(text="G1 Z0.5 F500; Raise bed"))
     starting_procedure_steps.append(fc.ManualGcode(text="G92 E0; Reset extruder position"))
+    starting_procedure_steps.append(fc.Printer(travel_speed=rapid_speed))
+    starting_procedure_steps.append(fc.ManualGcode(text="M117 Printing..."))
+    starting_procedure_steps.append(fc.ManualGcode(text="M1001"))
     return starting_procedure_steps
 
 
@@ -232,7 +235,7 @@ def raise3D_layer_change(
     fan_percent: float = 100,
     aux_fan: int = 255,
     z_feedrate: float = 300,
-    travel_feedrate: float = 9000,
+    rapid_speed: float = 9000,
     acceleration: float = 500,
 ) -> list:
     """Raise3D layer change as FullControl steps.
@@ -297,7 +300,7 @@ def raise3D_layer_change(
     layer_change_steps.append(fc.Extruder(on=False))
     layer_change_steps.append(fc.Printer(travel_speed=z_feedrate))
     layer_change_steps.append(fc.Point(z=z))  # G0 F300 Z
-    layer_change_steps.append(fc.Printer(travel_speed=travel_feedrate))
+    layer_change_steps.append(fc.Printer(travel_speed=rapid_speed))
     if next_x is not None and next_y is not None:
         layer_change_steps.append(fc.Point(x=next_x, y=next_y))  # G0 F9000 X Y
     layer_change_steps.append(fc.ManualGcode(text=f"M204 P{acceleration:.2f}; Set acceleration"))
