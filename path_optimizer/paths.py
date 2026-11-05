@@ -2115,8 +2115,10 @@ def path_steps(path, *, z: float = 0.0, scale: float = 1000.0,
             # exactly that reason; doing the same if you call this yourself.
             steps.append(fc.Printer(travel_speed=z_feedrate))
             steps.append(fc.Point(z=z + hop))
+            steps.append(fc.Printer(travel_speed=rapid_speed))
             steps.append(fc.Point(x=float(pts[0, 0]), y=float(pts[0, 1]), z=z + hop if hop else z))
         if hop:
+            steps.append(fc.Printer(travel_speed=z_feedrate))
             steps.append(fc.Point(z=z))
             steps.append(fc.Printer(travel_speed=rapid_speed))
         if retract:
@@ -2211,8 +2213,11 @@ def to_fullcontrol(paths, *, z: float = 0.0, scale: float = 1000.0,
             f"{path.kind} path {i}{' (closed)' if path.is_closed else ''}")
         # No hop on the first path: there is nothing laid down to clear yet, and
         # a bare z-Point at the head of a design has no x or y to carry over.
+        #steps += path_steps(path, z=z, scale=scale, annotate=annotate,
+        #                    retract=retract, hop=None if i == 0 else hop,
+        #                    label=label)
         steps += path_steps(path, z=z, scale=scale, annotate=annotate,
-                            retract=retract, hop=None if i == 0 else hop,
+                            retract=retract, hop=hop,
                             label=label)
     return steps
 
