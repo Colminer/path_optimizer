@@ -82,6 +82,7 @@ def raise3D_purge(
     purge_length_extruded: float = 12,
     purge_end_height: float = 5,
     z_feedrate: float = 300,
+    rapid_speed: float = 9000,
 ) -> list:
     """Raise3D purge line as FullControl steps.
 
@@ -129,11 +130,12 @@ def raise3D_purge(
     purge_end_x = purge_x + purge_length
     purge_end_extrusion = purge_length_extruded + 3
     purge_procedure_steps = []
-    purge_procedure_steps.append(fc.Printer(print_speed=z_feedrate))
+    purge_procedure_steps.append(fc.Printer(travel_speed=z_feedrate))
     purge_procedure_steps.append(fc.Point(x=purge_x, y=purge_y, z=purge_z))
     purge_procedure_steps.append(fc.ManualGcode(text=f"G1 X{purge_end_x} E{purge_length_extruded} F{purge_feedrate}; Purge line"))
     purge_procedure_steps.append(fc.ManualGcode(text=f"G1 Z{purge_end_height} E{purge_end_extrusion} F{purge_feedrate}; Purge end hover"))
     purge_procedure_steps.append(fc.ManualGcode(text="G92 E0; Reset extruder position"))
+    purge_procedure_steps.append(fc.Printer(travel_speed=rapid_speed))
     purge_procedure_steps.append(fc.ManualGcode(text="M117 Printing..."))
     purge_procedure_steps.append(fc.ManualGcode(text="M1001"))
     purge_procedure_steps.append(fc.ManualGcode(text="M204 T1500"))
@@ -237,7 +239,7 @@ def raise3D_layer_change(
     next_y: float | None = None,
     max_z: float = 300,
     fan_percent: float = 100,
-    aux_fan: int = 255,
+    aux_fan: int = 0,
     z_feedrate: float = 300,
     rapid_speed: float = 9000,
     acceleration: float = 500,

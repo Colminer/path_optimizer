@@ -2032,7 +2032,7 @@ def tool_change(tool, *, relative_e: bool | None = None) -> list:
 def path_steps(path, *, z: float = 0.0, scale: float = 1000.0,
                annotate: bool = True, travel: bool = True,
                retract: bool = False, retract_speed: float = 2400, retract_length: float = 0.5, unretract_speed: float = 1200, hop: float | None = None,
-               label: str | None = None) -> list:
+               z_feedrate: float = 300, rapid_speed: float = 9000, label: str | None = None) -> list:
     """One path as FullControl steps — the unit :func:`to_fullcontrol` is built from.
 
     Use this when the design needs something of yours between the paths: a
@@ -2113,11 +2113,12 @@ def path_steps(path, *, z: float = 0.0, scale: float = 1000.0,
             # a design, FullControl fills them with 0 and the head dives for the
             # origin.  to_fullcontrol suppresses the hop on the first path for
             # exactly that reason; doing the same if you call this yourself.
+            steps.append(fc.Printer(travel_speed=z_feedrate))
             steps.append(fc.Point(z=z + hop))
-        steps.append(fc.Point(x=float(pts[0, 0]), y=float(pts[0, 1]),
-                              z=z + hop if hop else z))
+            steps.append(fc.Point(x=float(pts[0, 0]), y=float(pts[0, 1]), z=z + hop if hop else z))
         if hop:
             steps.append(fc.Point(z=z))
+            steps.append(fc.Printer(travel_speed=rapid_speed))
         if retract:
             #steps.append(fc.PrinterCommand(id="unretract"))
             steps.append(fc.ManualGcode(text=f"G1 F{unretract_speed} E{retract_length}"))
