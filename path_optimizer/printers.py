@@ -55,7 +55,7 @@ def raise3D_startup_as_steps(
     starting_procedure_steps.append(fc.ManualGcode(text=f"M221 T0 S{extrusion_multiplier:.2f}; Extrusion multiplier"))
     starting_procedure_steps.append(fc.Buildplate(temp=heatbed_temp, wait=False))
     #starting_procedure_steps.append(fc.Hotend(temp=nozzle_temp_extruder0, wait=True))
-    starting_procedure_steps.append(fc.ManualGcode(text=f"M109 T0 S{nozzle_temp_extruder0}"))
+    starting_procedure_steps.append(fc.ManualGcode(text=f"M109 T0 S{nozzle_temp_extruder0}; Nozzle heating with tool specification"))
     #TODO tool number addition for m104
     starting_procedure_steps.append(fc.ManualGcode(text="T0; Select Tool 0"))
     starting_procedure_steps.append(fc.Buildplate(temp=heatbed_temp, wait=True))
